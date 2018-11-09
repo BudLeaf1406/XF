@@ -29,7 +29,7 @@ def start_command(bot,update,user_data):
         load_settings(user_data)
 
         print(user_data)
-        print(user_data[user_data[strings.CHANNEL_LIST][user_data[strings.CHANNEL_INDEX]]])
+
         keyboard = [[InlineKeyboardButton(text="הוספת שורה",callback_data=strings.ADD_LINE),
                     InlineKeyboardButton(text="הסרת כפתור",callback_data=strings.REMOVE_LINE)],
                     [InlineKeyboardButton(text="שינוי טקסט",callback_data=strings.CHANGE_TEXT),
@@ -220,7 +220,7 @@ def edit_keyboard_select(bot,update,user_data):
 
 def load_settings(user_data):
     try:
-        settings = user_data[user_data[strings.CHANNEL_LIST][user_data[strings.CHANNEL_INDEX]]]
+        settings = user_data[config.CHANNEL_LIST[user_data[strings.CHANNEL_INDEX]]]
 
         user_data[strings.KEYBOARD] = settings[0]
         user_data[strings.MESSAGE_TEXT] = settings[1]
