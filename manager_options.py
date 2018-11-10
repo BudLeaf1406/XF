@@ -22,6 +22,8 @@ def start_command(bot,update,user_data):
         from_user = update.message.from_user
 
     if from_user.id in config.ADMINS:
+        if strings.CHANNEL_LIST not in user_data:
+            user_data[strings.CHANNEL_LIST] = config.CHANNEL_LIST
         if strings.CHANNEL_INDEX not in user_data:
             user_data[strings.CHANNEL_INDEX] = 0
 
