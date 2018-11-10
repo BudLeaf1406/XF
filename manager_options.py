@@ -26,8 +26,8 @@ def start_command(bot,update,user_data):
             user_data[strings.CHANNEL_INDEX] = 0
 
         load_settings(user_data)
-        user_data[strings.KEYBOARD] = []
-        save_settings(user_data)
+        print(user_data)
+
         keyboard = [[InlineKeyboardButton(text="הוספת שורה",callback_data=strings.ADD_LINE),
                     InlineKeyboardButton(text="ערוך מקלדת",callback_data=strings.EDIT_KEYBOARD)],
                     [InlineKeyboardButton(text="שינוי טקסט",callback_data=strings.CHANGE_TEXT),
@@ -231,10 +231,11 @@ def edit_keyboard_select(bot,update,user_data):
 
 def load_settings(user_data):
     try:
+        print(user_data)
         settings = user_data[strings.CHANNEL_LIST][int(user_data[strings.CHANNEL_INDEX])]
-
-        user_data[strings.KEYBOARD] = settings[0]
-        user_data[strings.MESSAGE_TEXT] = settings[1]
+        if len(settings) == 2:
+            user_data[strings.KEYBOARD] = settings[0]
+            user_data[strings.MESSAGE_TEXT] = settings[1]
     except KeyError:
         user_data[strings.CHANNEL_LIST][int(user_data[strings.CHANNEL_INDEX])] = []
         user_data[strings.KEYBOARD] = []
