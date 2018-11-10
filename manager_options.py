@@ -21,17 +21,15 @@ def start_command(bot,update,user_data):
     else:
         from_user = update.message.from_user
 
-    print(user_data[strings.CHANNEL_LIST])
     if from_user.id in config.ADMINS:
         if strings.CHANNEL_INDEX not in user_data:
             user_data[strings.CHANNEL_INDEX] = 0
 
         load_settings(user_data)
-
-        print(user_data)
-
+        user_data[strings.KEYBOARD] = []
+        save_settings(user_data)
         keyboard = [[InlineKeyboardButton(text="הוספת שורה",callback_data=strings.ADD_LINE),
-                    InlineKeyboardButton(text="הסרת כפתור",callback_data=strings.REMOVE_LINE)],
+                    InlineKeyboardButton(text="ערוך מקלדת",callback_data=strings.EDIT_KEYBOARD)],
                     [InlineKeyboardButton(text="שינוי טקסט",callback_data=strings.CHANGE_TEXT),
                     InlineKeyboardButton(text="שלח לערוץ", callback_data=strings.CHANNEL_POST)],
                     [InlineKeyboardButton(text="ערוץ נוכחי: {}".format(user_data[strings.CHANNEL_LIST][user_data[strings.CHANNEL_INDEX]]), callback_data=strings.CHANGE_CHANNEL)],
@@ -48,7 +46,7 @@ def manager_menu(bot,update,user_data):
     user_data["row"] = None
     data = update.callback_query.data
     update = update.callback_query
-    print(data)
+
     if strings.ADD_LINE in data:
         update.message.reply_text("אנא שלח את הטקסט לכפתור")
         return "ADD_BUTTON_TEXT"
@@ -66,7 +64,7 @@ def manager_menu(bot,update,user_data):
         update.message.reply_text("נשלחה מודעה בערוץ")
         return start_command(bot,update,user_data)
     elif strings.CHANGE_CHANNEL in data:
-        print(len(user_data[strings.CHANNEL_LIST]))
+        print(user_data[strings.CHANNEL_LIST])
         print(user_data[strings.CHANNEL_INDEX])
         if user_data[strings.CHANNEL_INDEX] == len(user_data[strings.CHANNEL_LIST]) -1:
             user_data[strings.CHANNEL_INDEX] = 0
@@ -83,6 +81,9 @@ def manager_menu(bot,update,user_data):
     elif strings.DELETE_CHANNEL in data:
         update.message.reply_text("אנא שלח את היוזר של הערוץ")
         return "DELETE_CHANNEL_TEXT"
+    elif strings.EDIT_KEYBOARD in data:
+        print(user_data[strings.CHANNEL_LIST])
+        return edit_keyboard(bot,update,user_data)
 
 
 def add_button_text(bot,update,user_data):
@@ -124,7 +125,7 @@ def remove_button_link(bot,update,user_data):
             if button.url == txt:
                 line.remove(button)
                 found_button = True
-
+    user_data[strings.CHANNEL_INDEX] = 0
     save_settings(user_data)
     if found_button:
         update.message.reply_text("הכפתור נמחק")
@@ -193,17 +194,21 @@ def new_text(bot,update,user_data):
     return start_command(bot,update,user_data)
 
 
-def edit_keyboard(bot,update,user_data):
-    keyboard = user_data[strings.KEYBOARD]
+def edit_keyboard(bot,update,user_data,reply=False):
     index = 0
-    for line in keyboard:
+    load_settings(user_data)
+    for line in user_data[strings.KEYBOARD]:
+        print(strings.KEYBOARD)
         line.append(InlineKeyboardButton(text="מחק", callback_data=strings.DELETE_ROW + "|" + str(index)))
         line.append(InlineKeyboardButton(text="ערוך",callback_data=strings.EDIT_ROW + "|" + str(index)))
         index += 1
 
-    keyboard.append([[InlineKeyboardButton(text="הוסף שורה",callback_data=strings.ADD_LINE)]])
-
-    update.message.edit_message(text="עריכת מקלדת",reply_markup =InlineKeyboardMarkup(keyboard))
+    user_data[strings.KEYBOARD].append([[InlineKeyboardButton(text="הוסף שורה",callback_data=strings.ADD_LINE)]])
+    print(user_data[strings.KEYBOARD])
+    if not reply:
+        update.message.edit_text(text="עריכת מקלדת",reply_markup =InlineKeyboardMarkup(user_data[strings.KEYBOARD]))
+    else:
+        update.message.reply_text(text="עריכת מקלדת", reply_markup=InlineKeyboardMarkup(user_data[strings.KEYBOARD]))
     return "EDIT_KEYBOARD_SELECT"
 
 
@@ -215,12 +220,18 @@ def edit_keyboard_select(bot,update,user_data):
         update.message.edit_text(text="בחר כפתור לערוך",reply_markup=InlineKeyboardMarkup([user_data[strings.KEYBOARD][int(data.split('|')[1])]]))
         return "EDIT_BUTTON"
     elif strings.DELETE_ROW in data:
+        update.message.edit_text("השורה נמחקה")
         del user_data[strings.KEYBOARD][int(data.split('|')[1])]
-
+        return edit_keyboard(bot,update,user_data,reply=True)
+    elif strings.ADD_LINE in data:
+        update.message.reply_text("אנא שלח את הטקסט לכפתור")
+        return "ADD_BUTTON_TEXT"
+    else:
+        return start_command(bot,update,user_data)
 
 def load_settings(user_data):
     try:
-        settings = user_data[config.CHANNEL_LIST[user_data[strings.CHANNEL_INDEX]]]
+        settings = user_data[strings.CHANNEL_LIST][int(user_data[strings.CHANNEL_INDEX])]
 
         user_data[strings.KEYBOARD] = settings[0]
         user_data[strings.MESSAGE_TEXT] = settings[1]

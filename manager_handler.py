@@ -13,13 +13,14 @@ conv = ConversationHandler(
     entry_points=[CommandHandler(callback=manager_options.start_command, command="start", pass_user_data=True)],
     states={
         "MANAGER_MENU": [CallbackQueryHandler(callback=manager_options.manager_menu,
-                                              pattern="^{}$|^{}$|^{}$|^{}$|^{}$|^{}$|^{}$".format(strings.ADD_LINE,
+                                              pattern="^{}$|^{}$|^{}$|^{}$|^{}$|^{}$|^{}$|^{}$".format(strings.ADD_LINE,
                                                                                         strings.REMOVE_LINE,
                                                                                         strings.CHANGE_TEXT,
                                                                                         strings.CHANNEL_POST,
                                                                                         strings.CHANGE_CHANNEL,
                                                                                         strings.CREATE_CHANNEL,
-                                                                                        strings.DELETE_CHANNEL
+                                                                                        strings.DELETE_CHANNEL,
+                                                                                        strings.EDIT_KEYBOARD
                                                                                         ),
                                               pass_user_data=True)],
         "ADD_BUTTON_TEXT": [MessageHandler(filters=Filters.text,
@@ -44,7 +45,9 @@ conv = ConversationHandler(
                                             pass_user_data=True)],
         "DELETE_CHANNEL_TEXT": [MessageHandler(filters=Filters.text,
                                                callback=manager_options.delete_channel_text,
-                                               pass_user_data=True)]
+                                               pass_user_data=True)],
+        "EDIT_KEYBOARD_SELECT" : [CallbackQueryHandler(callback=manager_options.edit_keyboard_select,
+                                              pass_user_data=True)]
     },
     fallbacks=[
         CallbackQueryHandler(callback=manager_options.start_command, pattern="^{}$".format(strings.GO_TO_START),
